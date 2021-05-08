@@ -4,10 +4,15 @@ import {
   PLAYER2_COLOR,
   DIRECTION_LEFT,
   DIRECTION_RIGHT,
+  BORDER,
+  SCORE_WIDTH
 } from './src/constants';
 
 const canv = document.getElementById('canv');
 const $ctx = canv.getContext('2d');
+
+canv.height = BORDER
+canv.width = BORDER + SCORE_WIDTH
 
 const PLAYER1 = {
   color: PLAYER1_COLOR,

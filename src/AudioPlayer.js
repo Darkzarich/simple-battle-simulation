@@ -1,20 +1,49 @@
+const MAX_OVERLAY = 30;
+
+// sounds
 const sounds = {
-    background: new Audio(require('../assets/loop.mp3')),
-    bump: new Audio(require('../assets/bump.mp3'))
-}
+  background: require('../assets/loop.mp3'),
+  bump: require('../assets/bump.mp3'),
+};
+
+const soundManager = {
+  background: new Audio(sounds.background),
+  bump: Array(MAX_OVERLAY)
+    .fill()
+    .map(() => ({
+      audioElement: new Audio(sounds.bump),
+      busy: false,
+    })),
+};
+
 export default class AudioPlayer {
   static playBackgroundMusic() {
-    AudioPlayer.play(sounds['background'], 0.7, true)
+    AudioPlayer.play(soundManager['background'], 0.7, true);
   }
 
   static bump() {
-    AudioPlayer.play(sounds['bump'], 0.2, false)
+    AudioPlayer.play(soundManager['bump'], 0.2, false);
   }
 
   static play(audio, volume, loop) {
-    const newAudio = audio.cloneNode(true)
-    newAudio.loop = loop;
-    newAudio.volume = volume;
-    newAudio.play();
+    if (audio instanceof Array) {
+      const findFree = audio.find((el) => !el.busy);
+
+      if (findFree) {
+        findFree.busy = true;
+        findFree.audioElement.loop = loop;
+        findFree.audioElement.volume = volume;
+        findFree.audioElement.play();
+        findFree.audioElement.addEventListener('ended', () => {
+          findFree.busy = false;
+        });
+      }
+
+      return;
+    }
+
+    audio.loop = loop;
+    audio.volume = volume;
+    audio.play();
   }
 }
