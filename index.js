@@ -1,6 +1,8 @@
 const BORDER = 400;
+const SCORE_WIDTH = 100;
 const SCORE_SEPARATOR_WIDTH = 4;
 const UNIT_SIZE = 14;
+const UNIT_BASE_SPEED = 1;
 const PLAYER1_COLOR = 'green';
 const PLAYER2_COLOR = 'maroon';
 const COLLISION_COLOR = 'yellow';
@@ -18,6 +20,7 @@ class Unit {
     this.direction = side.direction;
     this.$ctx = ctx;
     this.power = 0;
+    this.speed = UNIT_BASE_SPEED;
   }
 
   move() {
@@ -25,17 +28,19 @@ class Unit {
 
     this.handleOutOfBorder();
 
-    this.x = this.x + 1 * this.direction;
+    this.speed = Math.max(1, Math.floor(this.power / 50) + 1) // every 50 power +1 speed
+
+    this.x = this.x + this.speed * this.direction;
   }
 
   handleOutOfBorder() {
     if (this.x > BORDER) {
-      this.y = this.y + (Math.floor(Math.random() * 100) % UNIT_SIZE); // random drop down
+      this.y = this.y + (Math.floor(Math.random() * 100) % UNIT_SIZE) * 2; // random drop down
       this.x = 0;
     }
 
     if (this.x < 0) {
-      this.y = this.y + (Math.floor(Math.random() * 100) % UNIT_SIZE); // random drop down
+      this.y = this.y + (Math.floor(Math.random() * 100) % UNIT_SIZE) * 2; // random drop down
       this.x = BORDER;
     }
 
@@ -81,8 +86,9 @@ class Unit {
 }
 
 class UI {
-  constructor(ctx) {
+  constructor(ctx, score, side) {
     this.$ctx = ctx;
+    this.score = score;
   }
 
   clearFrame() {
@@ -95,30 +101,42 @@ class UI {
     this.$ctx.fillStyle = 'white';
     this.$ctx.fillRect(BORDER, 0, SCORE_SEPARATOR_WIDTH, BORDER);
 
-    // Draw player1 UI side
-    this.$ctx.fillStyle = PLAYER1_COLOR;
-    this.$ctx.fillRect(
-      BORDER + SCORE_SEPARATOR_WIDTH,
-      0,
-      BORDER - SCORE_SEPARATOR_WIDTH + 100,
-      BORDER / 2
-    );
+    // Calc score appearance
+    const totalScore = Object.keys(this.score.score).reduce((prev, cur) => {
+      return prev + this.score.score[cur];
+    }, 0);
 
-    // Draw player2 UI side
-    this.$ctx.fillStyle = PLAYER2_COLOR;
-    this.$ctx.fillRect(
-      BORDER + SCORE_SEPARATOR_WIDTH,
-      BORDER / 2,
-      BORDER - SCORE_SEPARATOR_WIDTH + 100,
-      BORDER / 2
-    );
+    let scoreOffset = 0;
+
+    Object.keys(this.score.score).forEach((color) => {
+      const percentFromTotal = this.score.score[color] / totalScore;
+
+      this.$ctx.fillStyle = color;
+      this.$ctx.fillRect(
+        BORDER + SCORE_SEPARATOR_WIDTH,
+        scoreOffset,
+        SCORE_WIDTH,
+        BORDER * percentFromTotal
+      );
+
+      this.$ctx.font = '25px arial';
+      this.$ctx.fillStyle = 'white';
+      this.$ctx.fillText(
+        String(`${Math.ceil(percentFromTotal * 100)}%`),
+        BORDER + SCORE_SEPARATOR_WIDTH + SCORE_WIDTH / 4,
+        BORDER * percentFromTotal / 2 + scoreOffset
+      );
+
+      scoreOffset = scoreOffset + Math.ceil(BORDER * percentFromTotal) + 2;
+    });
   }
 }
 
 class Units {
-  constructor(ctx, unitsTotal, sides) {
+  constructor(ctx, unitsTotal, sides, score) {
     this.$ctx = ctx;
     this.units = this.generateRandomUnits(unitsTotal, sides);
+    this.score = score;
   }
 
   generateRandomUnits(unitsTotal, sides) {
@@ -153,14 +171,16 @@ class Units {
         collidedUnit.collided = true;
         unit.collided = true;
 
-        // AudioPlayer.bump();
+        AudioPlayer.bump();
 
         if (unit.power >= collidedUnit.power) {
           unit.setPower(0);
           this.killUnit(collidedUnit);
+          this.score.changeScore(unit.side.color, 1);
         } else {
           collidedUnit.setPower(0);
           this.killUnit(unit);
+          this.score.changeScore(collidedUnit.side.color, 1);
         }
 
         return;
@@ -189,16 +209,36 @@ class Units {
   }
 }
 
+class Score {
+  constructor(sides) {
+    this.score = {};
+    this.sides = sides;
+
+    sides.forEach((side) => {
+      this.score[side.color] = 0;
+    });
+  }
+
+  getScore() {
+    return this.score;
+  }
+
+  changeScore(player, value) {
+    this.score[player] += value;
+  }
+}
+
 class Game {
-  constructor(ctx, ui, unitsTotal, sides) {
+  constructor(ctx, unitsTotal, sides) {
     this.$ctx = ctx;
-    this.ui = ui;
-    this.units = new Units(ctx, unitsTotal, sides);
+    this.score = new Score(sides);
+    this.ui = new UI(ctx, this.score);
+    this.units = new Units(ctx, unitsTotal, sides, this.score);
     this.init();
   }
 
   init() {
-    // AudioPlayer.playBackgroundMusic();
+    AudioPlayer.playBackgroundMusic();
   }
 
   startSimulation() {
@@ -247,7 +287,7 @@ class AudioPlayer {
 
   const startButton = document.querySelector('#start');
   startButton.addEventListener('click', () => {
-    new Game($ctx, new UI($ctx), 50, [PLAYER1, PLAYER2]).startSimulation();
+    new Game($ctx, 50, [PLAYER1, PLAYER2]).startSimulation();
 
     startButton.remove();
   });
