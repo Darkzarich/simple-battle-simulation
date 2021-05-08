@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "parcel index.html",
+    "prebuild": "rm -rf dist",
     "build": "parcel build index.html --public-url https://darkzarich.github.io/simple-battle-simulation",
     "deploy:gh-pages": "gh-pages -d dist"
   },
