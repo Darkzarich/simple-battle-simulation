@@ -6,14 +6,18 @@ const PLAYER2_COLOR = 'maroon';
 const COLLISION_COLOR = 'yellow';
 const COLLISION_WIDTH = 2;
 const UNIT_POWER_GROWTH = 1;
+const DIRECTION_RIGHT = 1;
+const DIRECTION_LEFT = -1;
+
 class Unit {
   constructor({ x, y, side }, ctx) {
     this.x = x;
     this.y = y;
     this.side = side;
     this.collided = false;
-    this.direction = getDirectionBySide(side);
-    (this.$ctx = ctx), (this.power = 0);
+    this.direction = side.direction;
+    this.$ctx = ctx;
+    this.power = 0;
   }
 
   move() {
@@ -45,17 +49,31 @@ class Unit {
   }
 
   renderUnit() {
-    this.$ctx.fillStyle = this.side;
+    // draw trace
+
+    for (let i = 1; i < this.side.trace.length + 1; i++) {
+      this.$ctx.fillStyle = this.side.trace[i - 1];
+      this.$ctx.fillRect(
+        this.x - 3 * i * this.direction,
+        this.y + 1 * i,
+        UNIT_SIZE,
+        UNIT_SIZE - 2 * i
+      );
+    }
+
+    // draw unit
+    this.$ctx.fillStyle = this.side.color;
     this.$ctx.fillRect(this.x, this.y, UNIT_SIZE, UNIT_SIZE);
 
+    // collision border
     if (this.collided) {
-      const offset = this.direction === 1 ? UNIT_SIZE - COLLISION_WIDTH : 0
+      const offset = this.direction === 1 ? UNIT_SIZE - COLLISION_WIDTH : 0;
 
       this.$ctx.fillStyle = COLLISION_COLOR;
       this.$ctx.fillRect(
         this.x + offset,
         this.y,
-        COLLISION_WIDTH + 6,
+        COLLISION_WIDTH + 10,
         UNIT_SIZE
       );
     }
@@ -135,7 +153,7 @@ class Units {
         collidedUnit.collided = true;
         unit.collided = true;
 
-        AudioPlayer.bump();
+        // AudioPlayer.bump();
 
         if (unit.power >= collidedUnit.power) {
           unit.setPower(0);
@@ -163,7 +181,7 @@ class Units {
       if (
         Math.abs(otherUnit.x - unit.x) <= UNIT_SIZE - COLLISION_WIDTH &&
         Math.abs(otherUnit.y - unit.y) <= UNIT_SIZE - COLLISION_WIDTH &&
-        otherUnit.side !== unit.side
+        otherUnit.side.color !== unit.side.color
       ) {
         return otherUnit;
       }
@@ -180,7 +198,7 @@ class Game {
   }
 
   init() {
-    AudioPlayer.playBackgroundMusic()
+    // AudioPlayer.playBackgroundMusic();
   }
 
   startSimulation() {
@@ -209,31 +227,28 @@ class AudioPlayer {
   }
 }
 
-// utils
-
-function getDirectionBySide(side) {
-  switch (side) {
-    case PLAYER1_COLOR:
-      return 1;
-    case PLAYER2_COLOR:
-      return -1;
-  }
-}
-
 // main
 
 (function () {
   const canv = document.getElementById('canv');
   const $ctx = canv.getContext('2d');
 
+  const PLAYER1 = {
+    color: PLAYER1_COLOR,
+    trace: ['#008000a8', '#00800054'],
+    direction: DIRECTION_RIGHT,
+  };
+
+  const PLAYER2 = {
+    color: PLAYER2_COLOR,
+    trace: ['#800000a8', '#80000054'],
+    direction: DIRECTION_LEFT,
+  };
+
   const startButton = document.querySelector('#start');
   startButton.addEventListener('click', () => {
-    new Game($ctx, new UI($ctx), 50, [
-      PLAYER1_COLOR,
-      PLAYER2_COLOR,
-    ]).startSimulation();
+    new Game($ctx, new UI($ctx), 50, [PLAYER1, PLAYER2]).startSimulation();
 
     startButton.remove();
-  })
-
+  });
 })();
