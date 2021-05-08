@@ -3,13 +3,16 @@ const SCORE_SEPARATOR_WIDTH = 4;
 const UNIT_SIZE = 14;
 const PLAYER1_COLOR = 'green';
 const PLAYER2_COLOR = 'maroon';
+const COLLISION_COLOR = 'yellow';
+const COLLISION_WIDTH = 2;
 const UNIT_POWER_GROWTH = 1;
 class Unit {
   constructor({ x, y, side }, ctx) {
     this.x = x;
     this.y = y;
     this.side = side;
-    this.collided = true;
+    this.collided = false;
+    this.direction = getDirectionBySide(side);
     (this.$ctx = ctx), (this.power = 0);
   }
 
@@ -18,17 +21,17 @@ class Unit {
 
     this.handleOutOfBorder();
 
-    this.x = this.x + 1 * getDirectionBySide(this.side);
+    this.x = this.x + 1 * this.direction;
   }
 
   handleOutOfBorder() {
     if (this.x > BORDER) {
-      this.y = this.y + Math.floor(Math.random() * 100) % UNIT_SIZE; // random drop down
+      this.y = this.y + (Math.floor(Math.random() * 100) % UNIT_SIZE); // random drop down
       this.x = 0;
     }
 
     if (this.x < 0) {
-      this.y = this.y + Math.floor(Math.random() * 100) % UNIT_SIZE; // random drop down
+      this.y = this.y + (Math.floor(Math.random() * 100) % UNIT_SIZE); // random drop down
       this.x = BORDER;
     }
 
@@ -44,6 +47,18 @@ class Unit {
   renderUnit() {
     this.$ctx.fillStyle = this.side;
     this.$ctx.fillRect(this.x, this.y, UNIT_SIZE, UNIT_SIZE);
+
+    if (this.collided) {
+      const offset = this.direction === 1 ? UNIT_SIZE - COLLISION_WIDTH : 0
+
+      this.$ctx.fillStyle = COLLISION_COLOR;
+      this.$ctx.fillRect(
+        this.x + offset,
+        this.y,
+        COLLISION_WIDTH + 6,
+        UNIT_SIZE
+      );
+    }
   }
 }
 
@@ -95,7 +110,7 @@ class Units {
       if (i < sides.length - 1) i = i + 1;
       else i = 0;
 
-      return this.generateRandomUnit(sides[i])
+      return this.generateRandomUnit(sides[i]);
     });
   }
 
@@ -113,37 +128,44 @@ class Units {
   moveUnits() {
     this.units.forEach((unit) => {
       unit.move();
-      const collidedUnit = this.getCollidedUnit(unit)
+      const collidedUnit = this.getCollidedUnit(unit);
 
       if (collidedUnit) {
+        // draw collision border
+        collidedUnit.collided = true;
+        unit.collided = true;
+
+        AudioPlayer.bump();
+
         if (unit.power >= collidedUnit.power) {
           unit.setPower(0);
-          this.killUnit(collidedUnit)
+          this.killUnit(collidedUnit);
         } else {
           collidedUnit.setPower(0);
-          this.killUnit(unit)
-        }  
-        
+          this.killUnit(unit);
+        }
+
         return;
       }
 
-      unit.setPower(unit.power + UNIT_POWER_GROWTH)
+      unit.collided = false;
+      unit.setPower(unit.power + UNIT_POWER_GROWTH);
     });
   }
 
   killUnit(unit) {
-    this.units = this.units.filter(u => u !== unit)
-    this.units.push(this.generateRandomUnit(unit.side))
+    this.units = this.units.filter((u) => u !== unit);
+    this.units.push(this.generateRandomUnit(unit.side));
   }
 
   getCollidedUnit(unit) {
     for (const otherUnit of this.units) {
       if (
-        Math.abs(otherUnit.x - unit.x) <= UNIT_SIZE - 2 &&
-        Math.abs(otherUnit.y - unit.y) <= UNIT_SIZE - 2 &&
+        Math.abs(otherUnit.x - unit.x) <= UNIT_SIZE - COLLISION_WIDTH &&
+        Math.abs(otherUnit.y - unit.y) <= UNIT_SIZE - COLLISION_WIDTH &&
         otherUnit.side !== unit.side
       ) {
-        return otherUnit
+        return otherUnit;
       }
     }
   }
@@ -154,6 +176,11 @@ class Game {
     this.$ctx = ctx;
     this.ui = ui;
     this.units = new Units(ctx, unitsTotal, sides);
+    this.init();
+  }
+
+  init() {
+    AudioPlayer.playBackgroundMusic()
   }
 
   startSimulation() {
@@ -163,7 +190,22 @@ class Game {
 
     this.ui.drawInterface();
 
-    // window.requestAnimationFrame(this.startSimulation.bind(this));
+    window.requestAnimationFrame(this.startSimulation.bind(this));
+  }
+}
+
+class AudioPlayer {
+  static playBackgroundMusic() {
+    const audio = new Audio('/loop.mp3');
+    audio.loop = true;
+    audio.volume = 0.7;
+    audio.play();
+  }
+
+  static bump() {
+    const audio = new Audio('/bump.mp3');
+    audio.volume = 0.2;
+    audio.play();
   }
 }
 
@@ -184,8 +226,14 @@ function getDirectionBySide(side) {
   const canv = document.getElementById('canv');
   const $ctx = canv.getContext('2d');
 
-  new Game($ctx, new UI($ctx), 50, [
-    PLAYER1_COLOR,
-    PLAYER2_COLOR,
-  ]).startSimulation();
+  const startButton = document.querySelector('#start');
+  startButton.addEventListener('click', () => {
+    new Game($ctx, new UI($ctx), 50, [
+      PLAYER1_COLOR,
+      PLAYER2_COLOR,
+    ]).startSimulation();
+
+    startButton.remove();
+  })
+
 })();
