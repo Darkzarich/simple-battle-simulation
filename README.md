@@ -1,5 +1,7 @@
 ## Simple Battle Simulation
 
+[Show me what it looks like!](https://darkzarich.github.io/simple-battle-simulation/) (warning: has sounds!)
+
 - Made with Vanilla JavaScript
 - Uses `Canvas` and `window.requestAnimationFrame`
 
@@ -17,5 +19,3 @@ it **gets killed** giving a point to the other team's score
 - The surviving unit **looses all its power**
 - The **speed of a unit increases** for every **50 power** it has
 - **Dying units respawn right away** randomly placed on the battlefield 
-
-[Show me what it looks like!](https://darkzarich.github.io/simple-battle-simulation/) (warning: has sounds!)
