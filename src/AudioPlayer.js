@@ -8,7 +8,7 @@ export default class AudioPlayer {
   }
 
   static bump() {
-    AudioPlayer.play(sounds['bump'], 0.3, false)
+    AudioPlayer.play(sounds['bump'], 0.2, false)
   }
 
   static play(audio, volume, loop) {
