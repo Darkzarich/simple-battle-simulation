@@ -1,20 +1,20 @@
-const BASE_URL = process.env.NODE_ENV === 'development' 
-    ? ''
-    : process.env.GHPAGES_BASE_URL
-
+const sounds = {
+    background: new Audio(require('../assets/loop.mp3')),
+    bump: new Audio(require('../assets/bump.mp3'))
+}
 export default class AudioPlayer {
   static playBackgroundMusic() {
-    AudioPlayer.play(`${BASE_URL}/assets/loop.mp3`, 0.7, true)
+    AudioPlayer.play(sounds['background'], 0.7, true)
   }
 
   static bump() {
-    AudioPlayer.play(`${BASE_URL}/assets/bump.mp3`, 0.2, false)
+    AudioPlayer.play(sounds['bump'], 0.3, false)
   }
 
-  static play(src, volume, loop) {
-    const audio = new Audio(src);
-    audio.loop = loop;
-    audio.volume = volume;
-    audio.play();
+  static play(audio, volume, loop) {
+    const newAudio = audio.cloneNode(true)
+    newAudio.loop = loop;
+    newAudio.volume = volume;
+    newAudio.play();
   }
 }

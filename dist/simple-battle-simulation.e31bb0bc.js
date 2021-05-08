@@ -254,7 +254,11 @@ var UI = /*#__PURE__*/function () {
 }();
 
 exports.default = UI;
-},{"./constants":"src/constants.js"}],"src/AudioPlayer.js":[function(require,module,exports) {
+},{"./constants":"src/constants.js"}],"assets/loop.mp3":[function(require,module,exports) {
+module.exports = "/loop.cabe397f.mp3";
+},{}],"assets/bump.mp3":[function(require,module,exports) {
+module.exports = "/bump.ca2ff121.mp3";
+},{}],"src/AudioPlayer.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -268,7 +272,10 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-var BASE_URL = "development" === 'development' ? '' : "https://darkzarich.github.io/simple-battle-simulation";
+var sounds = {
+  background: new Audio(require('../assets/loop.mp3')),
+  bump: new Audio(require('../assets/bump.mp3'))
+};
 
 var AudioPlayer = /*#__PURE__*/function () {
   function AudioPlayer() {
@@ -278,20 +285,20 @@ var AudioPlayer = /*#__PURE__*/function () {
   _createClass(AudioPlayer, null, [{
     key: "playBackgroundMusic",
     value: function playBackgroundMusic() {
-      AudioPlayer.play("".concat(BASE_URL, "/assets/loop.mp3"), 0.7, true);
+      AudioPlayer.play(sounds['background'], 0.7, true);
     }
   }, {
     key: "bump",
     value: function bump() {
-      AudioPlayer.play("".concat(BASE_URL, "/assets/bump.mp3"), 0.2, false);
+      AudioPlayer.play(sounds['bump'], 0.3, false);
     }
   }, {
     key: "play",
-    value: function play(src, volume, loop) {
-      var audio = new Audio(src);
-      audio.loop = loop;
-      audio.volume = volume;
-      audio.play();
+    value: function play(audio, volume, loop) {
+      var newAudio = audio.cloneNode(true);
+      newAudio.loop = loop;
+      newAudio.volume = volume;
+      newAudio.play();
     }
   }]);
 
@@ -299,7 +306,7 @@ var AudioPlayer = /*#__PURE__*/function () {
 }();
 
 exports.default = AudioPlayer;
-},{}],"src/Unit.js":[function(require,module,exports) {
+},{"../assets/loop.mp3":"assets/loop.mp3","../assets/bump.mp3":"assets/bump.mp3"}],"src/Unit.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
