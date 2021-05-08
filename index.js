@@ -1,3 +1,4 @@
+const BASE_URL = 'https://darkzarich.github.io/simple-battle-simulation/';
 const BORDER = 400;
 const SCORE_WIDTH = 100;
 const SCORE_SEPARATOR_WIDTH = 4;
