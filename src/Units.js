@@ -23,8 +23,8 @@ export default class Units {
   generateRandomUnit(side) {
     return new Unit(
       {
-        x: Math.floor(Math.random() * 1000) % 400,
-        y: Math.floor(Math.random() * 1000) % 400,
+        x: Math.floor(Math.random() * 10000) % this.$ctx.canvas.width,
+        y: Math.floor(Math.random() * 10000) % this.$ctx.canvas.height,
         side,
       },
       this.$ctx

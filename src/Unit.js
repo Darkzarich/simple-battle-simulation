@@ -1,5 +1,5 @@
 import {
-  BORDER,
+  SCORE_WIDTH,
   UNIT_SIZE,
   COLLISION_COLOR,
   COLLISION_WIDTH,
@@ -29,17 +29,17 @@ export default class Unit {
   }
 
   handleOutOfBorder() {
-    if (this.x > BORDER) {
+    if (this.x > this.$ctx.canvas.width - SCORE_WIDTH) {
       this.y = this.y + (Math.floor(Math.random() * 100) % UNIT_SIZE) * 2; // random drop down
       this.x = 0;
     }
 
     if (this.x < 0) {
       this.y = this.y + (Math.floor(Math.random() * 100) % UNIT_SIZE) * 2; // random drop down
-      this.x = BORDER;
+      this.x = this.$ctx.canvas.width - SCORE_WIDTH;
     }
 
-    if (this.y > BORDER) {
+    if (this.y > this.$ctx.canvas.height) {
       this.y = 0;
     }
   }

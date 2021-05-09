@@ -1,5 +1,4 @@
-export const BORDER = 400;
-export const SCORE_WIDTH = 100;
+export const SCORE_WIDTH = 70;
 export const SCORE_SEPARATOR_WIDTH = 4;
 export const UNIT_SIZE = 14;
 export const UNIT_BASE_SPEED = 1;

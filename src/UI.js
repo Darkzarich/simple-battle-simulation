@@ -1,8 +1,4 @@
-import {
-    BORDER,
-    SCORE_SEPARATOR_WIDTH,
-    SCORE_WIDTH
-  } from './constants';
+import { SCORE_SEPARATOR_WIDTH, SCORE_WIDTH } from './constants';
 
 export default class UI {
   constructor(ctx, score) {
@@ -12,13 +8,18 @@ export default class UI {
 
   clearFrame() {
     this.$ctx.fillStyle = 'black';
-    this.$ctx.fillRect(0, 0, canv.width, canv.height);
+    this.$ctx.fillRect(0, 0, this.$ctx.canvas.width, this.$ctx.canvas.height);
   }
 
   drawInterface() {
     // Draw separator
     this.$ctx.fillStyle = 'white';
-    this.$ctx.fillRect(BORDER, 0, SCORE_SEPARATOR_WIDTH, BORDER);
+    this.$ctx.fillRect(
+      this.$ctx.canvas.width - SCORE_WIDTH,
+      0,
+      SCORE_SEPARATOR_WIDTH,
+      this.$ctx.canvas.height
+    );
 
     // Calc score appearance
     const totalScore = Object.keys(this.score.score).reduce((prev, cur) => {
@@ -32,21 +33,25 @@ export default class UI {
 
       this.$ctx.fillStyle = color;
       this.$ctx.fillRect(
-        BORDER + SCORE_SEPARATOR_WIDTH,
+        this.$ctx.canvas.width - SCORE_WIDTH + SCORE_SEPARATOR_WIDTH,
         scoreOffset,
         SCORE_WIDTH,
-        BORDER * percentFromTotal
+        this.$ctx.canvas.height * percentFromTotal
       );
 
-      this.$ctx.font = '25px arial';
+      this.$ctx.font = '20px arial';
       this.$ctx.fillStyle = 'white';
       this.$ctx.fillText(
-        String(`${Math.ceil(percentFromTotal * 100)}%`),
-        BORDER + SCORE_SEPARATOR_WIDTH + SCORE_WIDTH / 4,
-        (BORDER * percentFromTotal) / 2 + scoreOffset
+        String(`${(percentFromTotal * 100).toFixed(1)}%`),
+        this.$ctx.canvas.width -
+          SCORE_WIDTH -
+          SCORE_SEPARATOR_WIDTH +
+          SCORE_WIDTH / 5,
+        (this.$ctx.canvas.height * percentFromTotal) / 2 + scoreOffset
       );
 
-      scoreOffset = scoreOffset + Math.ceil(BORDER * percentFromTotal) + 2;
+      scoreOffset =
+        scoreOffset + Math.ceil(this.$ctx.canvas.height * percentFromTotal) + 2;
     });
   }
 }
